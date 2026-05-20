@@ -1,0 +1,31 @@
+[project]
+name = "kriterion"
+version = "0.1.0"
+description = "Library for signal detection theory analysis."
+authors = [
+    {name = "L",email = "56237933+lcdunne@users.noreply.github.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy (>=2.4.6,<3.0.0)",
+    "scipy (>=1.17.1,<2.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "kriterion", from = "src"}]
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.3"
+mkdocs = "^1.6.1"
+matplotlib = "^3.10.9"
+black = "^26.5.1"
+isort = "^8.0.1"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
