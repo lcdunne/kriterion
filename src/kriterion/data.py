@@ -1,4 +1,5 @@
 from enum import StrEnum
+from functools import cached_property
 
 import numpy as np
 from scipy.stats import norm
@@ -123,26 +124,26 @@ class ROCData:
         self.condition = condition
         self.correction = correction
 
-    @property
+    @cached_property
     def n_signal(self) -> int:
         return int(self.signal.sum())
 
-    @property
+    @cached_property
     def n_noise(self) -> int:
         return int(self.noise.sum())
 
-    @property
+    @cached_property
     def signal_proportions(self) -> np.ndarray:
         return compute_proportions(self.signal, self.correction)
 
-    @property
+    @cached_property
     def noise_proportions(self) -> np.ndarray:
         return compute_proportions(self.noise, self.correction)
 
-    @property
+    @cached_property
     def z_signal(self) -> np.ndarray:
         return norm.ppf(self.signal_proportions)
 
-    @property
+    @cached_property
     def z_noise(self) -> np.ndarray:
         return norm.ppf(self.noise_proportions)
