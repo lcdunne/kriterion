@@ -45,8 +45,11 @@ class Model(ABC):
             self.__setattr__(p, x[i])
 
     @abstractmethod
-    def compute_expected(self) -> tuple[np.ndarray, np.ndarray]:
+    def compute_expected(self, smooth: bool = False) -> tuple[np.ndarray, np.ndarray]:
         """Expected (noise, signal) cumulative proportions from current params."""
+
+    def roc(self) -> tuple[np.ndarray, np.ndarray]:
+        return self.compute_expected(smooth=True)
 
 
 class ContinuousModel(Model):
@@ -84,6 +87,21 @@ class ContinuousModel(Model):
         self.criteria = x[n_named:]
 
 
+class HighThreshold(Model):
+    """High-Threshold detection model."""
+
+    _param_spec = {"R": Param(initial=0.99)}
+
+    def __init__(self, data: ROCData) -> None:
+        super().__init__(data)
+        self.R = 0.99
+
+    def compute_expected(self, smooth: bool = False) -> tuple[np.ndarray, np.ndarray]:
+        model_noise = np.array([0, 1]) if smooth else self.data.noise_proportions
+        model_signal = (1 - self.R) * model_noise + self.R
+        return model_noise, model_signal
+
+
 class SignalDetection(ContinuousModel):
     """Equal-variance signal detection model."""
 
@@ -95,25 +113,54 @@ class SignalDetection(ContinuousModel):
         super().__init__(data)
         self.d = 1.0
 
-    def compute_expected(self) -> tuple[np.ndarray, np.ndarray]:
-        model_signal = stats.norm.cdf(self.d / 2 - self.criteria)
-        model_noise = stats.norm.cdf(-self.d / 2 - self.criteria)
+    def compute_expected(self, smooth: bool = False) -> tuple[np.ndarray, np.ndarray]:
+        c = np.linspace(3.0, -3.0, 200) if smooth else self.criteria
+        model_signal = stats.norm.cdf(self.d / 2 - c)
+        model_noise = stats.norm.cdf(-self.d / 2 - c)
         return model_noise, model_signal
 
 
-if __name__ == "__main__":
-    data = ROCData(
-        signal=[505, 248, 226, 172, 144, 93],
-        noise=[115, 185, 304, 523, 551, 397],
-    )
+class UnequalSignalDetection(ContinuousModel):
+    """Unequal-variance signal detection model."""
 
-    sdt = SignalDetection(data)
+    _param_spec = {
+        "d": Param(initial=1.0),
+        "signal_sd": Param(initial=1.5, bounds=(0, None)),
+    }
 
-    print(sdt.x0)
-    print(sdt.bounds)
+    d: float
+    signal_sd: float
 
-    sdt.update(np.array([2.0, 1.2, 0.6, 0.0, -0.6, -1.2]))
-    assert sdt.d == 2.0
-    assert np.allclose(sdt.criteria, [1.2, 0.6, 0.0, -0.6, -1.2])
-    assert np.allclose(sdt.x0, [2.0, 1.2, 0.6, 0.0, -0.6, -1.2])
-    print(sdt.x0)
+    def __init__(self, data: ROCData) -> None:
+        super().__init__(data)
+        self.d = 1.0
+        self.signal_sd = 1.5
+
+    def compute_expected(self, smooth: bool = False) -> tuple[np.ndarray, np.ndarray]:
+        c = np.linspace(3.0, -3.0, 200) if smooth else self.criteria
+        model_signal = stats.norm.cdf(self.d / 2 - c, scale=self.signal_sd)
+        model_noise = stats.norm.cdf(-self.d / 2 - c)
+        return model_noise, model_signal
+
+
+class DualProcess(ContinuousModel):
+    """Dual Process (signal detection + threshold) model."""
+
+    _param_spec = {
+        "d": Param(initial=1.0),
+        "R": Param(initial=0.99, bounds=(0, 1)),
+    }
+
+    d: float
+    R: float
+
+    def __init__(self, data: ROCData) -> None:
+        super().__init__(data)
+        self.d = 1.0
+        self.R = 0.9
+
+    def compute_expected(self, smooth: bool = False) -> tuple[np.ndarray, np.ndarray]:
+        c = np.linspace(3.0, -3.0, 200) if smooth else self.criteria
+        model_signal = self.R + (1 - self.R) * stats.norm.cdf(self.d / 2 - c)
+        model_noise = stats.norm.cdf(-self.d / 2 - c)
+        return model_noise, model_signal
