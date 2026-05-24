@@ -152,7 +152,7 @@ def beta(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
 
     It is the ratio of the likelihood of obtaining an observation
     equal to the criterion given a signal to the likelihood of
-    obtaining this observation given noise. Or: L(x_c)|S / L(x_c)|N.
+    obtaining this observation given noise.
 
     See Snodgrass & Corwin (1988) for details.
     """

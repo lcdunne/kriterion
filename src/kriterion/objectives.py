@@ -178,6 +178,10 @@ def sse(obs_prop: np.ndarray, exp_prop: np.ndarray) -> float:
     return np.sum((obs_prop - exp_prop) ** 2)
 
 
+def _to_cell_counts(cumulative_props: np.ndarray, n: int) -> np.ndarray:
+    return np.maximum(np.diff(cumulative_props, prepend=0.0, append=1.0), 1e-10) * n
+
+
 def log_likelihood_binom_objective(x: np.ndarray, model: Model) -> float:
     model.update(x)
     noise_exp, signal_exp = model.compute_expected()
@@ -194,16 +198,11 @@ def log_likelihood_binom_objective(x: np.ndarray, model: Model) -> float:
 def chi_squared_objective(x: np.ndarray, model: Model) -> float:
     model.update(x)
     noise_exp, signal_exp = model.compute_expected()
-    exp_signal = (
-        np.maximum(np.diff(signal_exp, prepend=0.0, append=1.0), 1e-10)
-        * model.data.n_signal
-    )
-    exp_noise = (
-        np.maximum(np.diff(noise_exp, prepend=0.0, append=1.0), 1e-10)
-        * model.data.n_noise
-    )
-    return chi_squared(model.data.signal.astype(float), exp_signal) + chi_squared(
-        model.data.noise.astype(float), exp_noise
+    return chi_squared(
+        model.data.signal.astype(float),
+        _to_cell_counts(signal_exp, model.data.n_signal),
+    ) + chi_squared(
+        model.data.noise.astype(float), _to_cell_counts(noise_exp, model.data.n_noise)
     )
 
 
@@ -218,16 +217,11 @@ def chi_squared_binom_objective(x: np.ndarray, model: Model) -> float:
 def g_squared_objective(x: np.ndarray, model: Model) -> float:
     model.update(x)
     noise_exp, signal_exp = model.compute_expected()
-    exp_signal = (
-        np.maximum(np.diff(signal_exp, prepend=0.0, append=1.0), 1e-10)
-        * model.data.n_signal
-    )
-    exp_noise = (
-        np.maximum(np.diff(noise_exp, prepend=0.0, append=1.0), 1e-10)
-        * model.data.n_noise
-    )
-    return g_squared(model.data.signal.astype(float), exp_signal) + g_squared(
-        model.data.noise.astype(float), exp_noise
+    return g_squared(
+        model.data.signal.astype(float),
+        _to_cell_counts(signal_exp, model.data.n_signal),
+    ) + g_squared(
+        model.data.noise.astype(float), _to_cell_counts(noise_exp, model.data.n_noise)
     )
 
 
@@ -244,8 +238,6 @@ def log_likelihood_objective(x: np.ndarray, model: Model) -> float:
     noise_exp, signal_exp = model.compute_expected()
     signal_p = np.maximum(np.diff(signal_exp, prepend=0.0, append=1.0), 1e-10)
     noise_p = np.maximum(np.diff(noise_exp, prepend=0.0, append=1.0), 1e-10)
-    print("\n", signal_exp, signal_p, "\n")
-    print("\n", model.data.signal.astype(float), "\n")
     return -(
         log_likelihood(model.data.signal.astype(float), signal_p)
         + log_likelihood(model.data.noise.astype(float), noise_p)
