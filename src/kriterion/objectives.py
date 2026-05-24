@@ -58,13 +58,17 @@ def chi_squared_binom(obs_prop: np.ndarray, exp_prop: np.ndarray, n: int) -> flo
 
 def g_squared(obs: np.ndarray, exp: np.ndarray) -> float:
     """$G^2$ (likelihood-ratio) statistic for a single response class. Standard
-    (multinomial) variant:
+    (multinomial) variant [^cressie_read_1984]:
 
     $$
     G^2 = 2 \\sum_{k=1}^{K} O_k \\ln \\frac{O_k}{E_k}
     $$
 
     where $O_k$ and $E_k$ are the observed and expected cell counts in bin $k$.
+
+    [^cressie_read_1984]: [Cressie, N., & Timothy R. C. Read. (1984). Multinomial
+    Goodness-of-Fit Tests. Journal of the Royal Statistical Society. Series B
+    (Methodological), 46(3), 440–464](http://www.jstor.org/stable/2345686).
 
     Parameters
     ----------
@@ -159,6 +163,21 @@ def log_likelihood_binom(obs_prop: np.ndarray, exp_prop: np.ndarray, n: int) -> 
     )
 
 
+def sse(obs_prop: np.ndarray, exp_prop: np.ndarray) -> float:
+    """Sum of squared errors for a single response class.
+
+    Calculates the $SSE$ between the observevd and expected cumulative proportions.
+
+    Parameters
+    ----------
+    obs_prop :
+        Observed cumulative proportions at each threshold.
+    exp_prop :
+        Expected cumulative proportions from the model.
+    """
+    return np.sum((obs_prop - exp_prop) ** 2)
+
+
 def log_likelihood_binom_objective(x: np.ndarray, model: Model) -> float:
     model.update(x)
     noise_exp, signal_exp = model.compute_expected()
@@ -230,4 +249,12 @@ def log_likelihood_objective(x: np.ndarray, model: Model) -> float:
     return -(
         log_likelihood(model.data.signal.astype(float), signal_p)
         + log_likelihood(model.data.noise.astype(float), noise_p)
+    )
+
+
+def sse_objective(x: np.ndarray, model: Model) -> float:
+    model.update(x)
+    noise_exp, signal_exp = model.compute_expected()
+    return sse(model.data.signal_proportions, signal_exp) + sse(
+        model.data.noise_proportions, noise_exp
     )
