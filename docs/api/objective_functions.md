@@ -1,24 +1,6 @@
-# API Reference
+# Objective Functions
 
-## Core SDT measures
-
-The core signal detection theory measures found throughout the literature can be found referenced in Stanislaw & Todorov (1999)[^stanislaw_todorov_1999].
-
-[^stanislaw_todorov_1999]: [Stanislaw, H., Todorov, N. Calculation of signal detection theory measures. Behavior Research Methods, Instruments, & Computers 31, 137–149 (1999).](https://doi.org/10.3758/BF03207704)
-
-::: kriterion.measures
-
-## Data Helpers
-
-::: kriterion.data
-
-## Theoretical Models
-
-::: kriterion.models
-
-## Objective Functions
-
-The objective functions are used to find the best fit for the chosen model. Several functions are supported, including the $\chi^2$, $G^2$, $SSE$, and Log-likelihood.
+The objective functions are used to find the best fit for the chosen model. Several functions are supported, including the $\chi^2$, $G^2$, Log-likelihood, and $\text{SSE}$.
 
 There are tradeoffs with each approach. Those with the `_binom` suffix use the cumulative data, and treat the data at each criterion as a binomial with the counts above vs below the threshold, and then summing across all criteria. These variants converge reliably and are not impacted by sparse cell counts. However, these violate independence; because it works on cumulative data, successive threshold levels contain data from preceding levels. It treats overlapping data as if they were separate observations.
 

@@ -46,13 +46,48 @@ class Model(ABC):
 
     @abstractmethod
     def compute_expected(self, smooth: bool = False) -> tuple[np.ndarray, np.ndarray]:
-        """Expected (noise, signal) cumulative proportions from current params."""
+        """Expected cumulative proportions under the current parameter values.
+
+        All subclasses must implement this method.
+
+        Parameters
+        ----------
+        smooth : bool, optional
+            If True, evaluate over a dense criterion grid for plotting rather
+            than at the observed rating boundaries, by default False.
+
+        Returns
+        -------
+        tuple[np.ndarray, np.ndarray]
+            `(noise, signal)` cumulative proportions.
+        """
 
     def roc(self) -> tuple[np.ndarray, np.ndarray]:
+        """Smooth ROC curve for plotting.
+
+        Evaluates the model over a dense criterion grid rather than the
+        observed rating boundaries.
+
+        Returns
+        -------
+        tuple[np.ndarray, np.ndarray]
+            `(noise, signal)` cumulative proportions over the dense grid.
+        """
         return self.compute_expected(smooth=True)
 
 
 class ContinuousModel(Model):
+    """Base class for models with continuous criterion parameters.
+
+    Extends `Model` with a set of free criterion locations $c_k$.
+
+    Attributes
+    ----------
+    criteria : np.ndarray
+        Criterion locations $c_k$, one per rating boundary, initialised to
+        a uniform grid over $[-1.5, 1.5]$.
+    """
+
     criteria: np.ndarray
 
     def __init__(self, data: ROCData) -> None:
@@ -88,7 +123,20 @@ class ContinuousModel(Model):
 
 
 class HighThreshold(Model):
-    """High-Threshold detection model."""
+    """High-threshold detection model.
+
+    Signal responses are modelled as a mix of true detection with probability $R$ and
+    guessing with probability $(1-R)G$:
+
+    $$
+    H_k = R + (1 - R) \\cdot F_k
+    $$
+
+    Attributes
+    ----------
+    R : float
+        Detection probability, $0 \\leq R \\leq 1$.
+    """
 
     _param_spec = {"R": Param(initial=0.99)}
 
@@ -103,7 +151,29 @@ class HighThreshold(Model):
 
 
 class SignalDetection(ContinuousModel):
-    """Equal-variance signal detection model."""
+    """Equal-variance signal detection model[^macmillan_creelman].
+
+    Signal and noise are modelled as Gaussian distributions with equal variance,
+    separated by sensitivity $d'$:
+
+    $$
+    H_k = \\Phi\\left(\\frac{d'}{2} - c_k\\right), \\quad
+    F_k = \\Phi\\left(-\\frac{d'}{2} - c_k\\right)
+    $$
+
+    where $\\Phi$ is the standard normal CDF and $c_k$ are the criterion
+    locations.
+
+    [^macmillan_creelman]: [Macmillan, N.A., & Creelman, C.D. (2004). Detection Theory:
+    A User's Guide (2nd ed.). Psychology Press.](https://doi.org/10.4324/9781410611147)
+
+    Attributes
+    ----------
+    d : float
+        Sensitivity $d'$.
+    criteria : np.ndarray
+        Criterion locations $c_k$, one per rating boundary.
+    """
 
     _param_spec = {"d": Param(initial=1.0)}
 
@@ -121,7 +191,28 @@ class SignalDetection(ContinuousModel):
 
 
 class UnequalSignalDetection(ContinuousModel):
-    """Unequal-variance signal detection model."""
+    """Unequal-variance signal detection model.
+
+    Extends the equal-variance model by allowing the signal distribution to
+    have standard deviation $\\sigma_s \\neq 1$:
+
+    $$
+    H_k = \\Phi\\left(\\frac{d'/2 - c_k}{\\sigma_s}\\right), \\quad
+    F_k = \\Phi\\left(-\\frac{d'}{2} - c_k\\right)
+    $$
+
+    where $\\Phi$ is the standard normal CDF and $c_k$ are the criterion
+    locations.
+
+    Attributes
+    ----------
+    d : float
+        Sensitivity $d'$.
+    signal_sd : float
+        Standard deviation $\\sigma_s$ of the signal distribution.
+    criteria : np.ndarray
+        Criterion locations $c_k$, one per rating boundary.
+    """
 
     _param_spec = {
         "d": Param(initial=1.0),
@@ -144,7 +235,33 @@ class UnequalSignalDetection(ContinuousModel):
 
 
 class DualProcess(ContinuousModel):
-    """Dual Process (signal detection + threshold) model."""
+    """Dual-process signal detection model[^yonelinas_et_al_1996].
+
+    Combines continuous Gaussian discrimination with a high-threshold
+    recollection component of probability $R$:
+
+    $$
+    H_k = R + (1 - R) \\cdot \\Phi\\left(\\frac{d'}{2} - c_k\\right), \\quad
+    F_k = \\Phi\\left(-\\frac{d'}{2} - c_k\\right)
+    $$
+
+    where $\\Phi$ is the standard normal CDF and $c_k$ are the criterion
+    locations .
+
+    [^yonelinas_et_al_1996]: [Yonelinas, A. P., Dobbins, I., Szymanski, M. D.,
+    Dhaliwal, H. S., & King, L. (1996). Signal-Detection, Threshold, and
+    Dual-Process Models of Recognition Memory: ROCs and Conscious Recollection.
+    Consciousness and Cognition, 5(4), 418–441.](https://doi.org/10.1006/CCOG.1996.0026)
+
+    Attributes
+    ----------
+    d : float
+        Continuous sensitivity $d'$.
+    R : float
+        Recollection probability, $0 \\leq R \\leq 1$.
+    criteria : np.ndarray
+        Criterion locations $c_k$, one per rating boundary.
+    """
 
     _param_spec = {
         "d": Param(initial=1.0),

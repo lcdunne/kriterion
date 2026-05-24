@@ -118,7 +118,7 @@ def log_likelihood(obs: np.ndarray, exp_prop: np.ndarray) -> float:
     cell probabilities is:
 
     $$
-    \\LL = \\sum_{k=1}^{K} O_k \\ln P_k
+    LL = \\sum_{k=1}^{K} O_k \\ln P_k
     $$
 
     where $O_k$ are observed cell counts and $P_k$ are predicted cell
@@ -166,7 +166,7 @@ def log_likelihood_binom(obs_prop: np.ndarray, exp_prop: np.ndarray, n: int) -> 
 def sse(obs_prop: np.ndarray, exp_prop: np.ndarray) -> float:
     """Sum of squared errors for a single response class.
 
-    Calculates the $SSE$ between the observevd and expected cumulative proportions.
+    Calculates the $\\text{SSE}$ between the observevd and expected cumulative proportions.
 
     Parameters
     ----------
