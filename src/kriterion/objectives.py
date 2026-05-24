@@ -182,9 +182,9 @@ def _to_cell_counts(cumulative_props: np.ndarray, n: int) -> np.ndarray:
     return np.maximum(np.diff(cumulative_props, prepend=0.0, append=1.0), 1e-10) * n
 
 
-def log_likelihood_binom_objective(x: np.ndarray, model: Model) -> float:
-    model.update(x)
-    noise_exp, signal_exp = model.compute_expected()
+def log_likelihood_binom_objective(
+    signal_exp: np.ndarray, noise_exp: np.ndarray, model: Model
+) -> float:
     return -(
         log_likelihood_binom(
             model.data.signal_proportions, signal_exp, model.data.n_signal
@@ -195,9 +195,9 @@ def log_likelihood_binom_objective(x: np.ndarray, model: Model) -> float:
     )
 
 
-def chi_squared_objective(x: np.ndarray, model: Model) -> float:
-    model.update(x)
-    noise_exp, signal_exp = model.compute_expected()
+def chi_squared_objective(
+    signal_exp: np.ndarray, noise_exp: np.ndarray, model: Model
+) -> float:
     return chi_squared(
         model.data.signal.astype(float),
         _to_cell_counts(signal_exp, model.data.n_signal),
@@ -206,17 +206,17 @@ def chi_squared_objective(x: np.ndarray, model: Model) -> float:
     )
 
 
-def chi_squared_binom_objective(x: np.ndarray, model: Model) -> float:
-    model.update(x)
-    noise_exp, signal_exp = model.compute_expected()
+def chi_squared_binom_objective(
+    signal_exp: np.ndarray, noise_exp: np.ndarray, model: Model
+) -> float:
     return chi_squared_binom(
         model.data.signal_proportions, signal_exp, model.data.n_signal
     ) + chi_squared_binom(model.data.noise_proportions, noise_exp, model.data.n_noise)
 
 
-def g_squared_objective(x: np.ndarray, model: Model) -> float:
-    model.update(x)
-    noise_exp, signal_exp = model.compute_expected()
+def g_squared_objective(
+    signal_exp: np.ndarray, noise_exp: np.ndarray, model: Model
+) -> float:
     return g_squared(
         model.data.signal.astype(float),
         _to_cell_counts(signal_exp, model.data.n_signal),
@@ -225,17 +225,17 @@ def g_squared_objective(x: np.ndarray, model: Model) -> float:
     )
 
 
-def g_squared_binom_objective(x: np.ndarray, model: Model) -> float:
-    model.update(x)
-    noise_exp, signal_exp = model.compute_expected()
+def g_squared_binom_objective(
+    signal_exp: np.ndarray, noise_exp: np.ndarray, model: Model
+) -> float:
     return g_squared_binom(
         model.data.signal_proportions, signal_exp, model.data.n_signal
     ) + g_squared_binom(model.data.noise_proportions, noise_exp, model.data.n_noise)
 
 
-def log_likelihood_objective(x: np.ndarray, model: Model) -> float:
-    model.update(x)
-    noise_exp, signal_exp = model.compute_expected()
+def log_likelihood_objective(
+    signal_exp: np.ndarray, noise_exp: np.ndarray, model: Model
+) -> float:
     signal_p = np.maximum(np.diff(signal_exp, prepend=0.0, append=1.0), 1e-10)
     noise_p = np.maximum(np.diff(noise_exp, prepend=0.0, append=1.0), 1e-10)
     return -(
@@ -244,9 +244,7 @@ def log_likelihood_objective(x: np.ndarray, model: Model) -> float:
     )
 
 
-def sse_objective(x: np.ndarray, model: Model) -> float:
-    model.update(x)
-    noise_exp, signal_exp = model.compute_expected()
+def sse_objective(signal_exp: np.ndarray, noise_exp: np.ndarray, model: Model) -> float:
     return sse(model.data.signal_proportions, signal_exp) + sse(
         model.data.noise_proportions, noise_exp
     )
