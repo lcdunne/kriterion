@@ -28,26 +28,30 @@ def compute_performance(
 
 
 def d_prime(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
-    """Sensitivity measure d′, element-wise.
+    """Sensitivity measure $d'$, element-wise.
+
+    $$
+    d' = z(H) - z(F)
+    $$
+
+    where $z(\\cdot)$ denotes the inverse normal (probit) function.
 
     Parameters
     ----------
     tpr : ArrayLike
-        The true positive rate(s) (range 0 <= `tpr` <= 1)
+        True positive rate(s), $0 \\leq H \\leq 1$.
     fpr : ArrayLike
-        The false positive rate(s) (range 0 <= `fpr` <= 1)
+        False positive rate(s), $0 \\leq F \\leq 1$.
 
     Returns
     -------
-    ndarray
-        d′. An array of the same length as tpr, fpr, containing the d′
-        values. If `tpr` and `fpr` are single floats then a single float
-        corresponding to d′ is returned.
+    ArrayLike
+        $d'$. A float or array of the same shape as `tpr` and `fpr`.
 
     Notes
     -----
-    Estimates the ability to discriminate between instances of signal and
-    noise. The larger the magnitude, the greater the sensitivity.
+    Estimates the ability to discriminate between signal and noise. Larger
+    magnitude indicates greater sensitivity.
 
     Examples
     --------
@@ -59,30 +63,31 @@ def d_prime(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
 
 
 def c_bias(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
-    """Bias measure `c`.
+    """Bias measure $c$.
+
+    $$
+    c = -\\frac{1}{2} \\left[ z(H) + z(F) \\right]
+    $$
+
+    where $z(\\cdot)$ denotes the inverse normal (probit) function.
 
     Parameters
     ----------
     tpr : ArrayLike
-        The true positive rate(s) (range 0 <= `tpr` <= 1). Can be
-        a single float value or an array.
+        True positive rate(s), $0 \\leq H \\leq 1$.
     fpr : ArrayLike
-        The false positive rate(s) (range 0 <= `fpr` <= 1). Can be
-        a single float value or an array.
+        False positive rate(s), $0 \\leq F \\leq 1$.
 
     Returns
     -------
-    ndarray
-        c. An array of the same length as tpr, fpr, containing the c values.
-        If `tpr` and `fpr` are single floats then a single float corresponding
-        to c is returned.
+    ArrayLike
+        $c$. A float or array of the same shape as `tpr` and `fpr`.
 
     Notes
     -----
-    Estimates the criterion value relative to the intersection of the signal
-    and noise distributions, centering on 0 (no bias). Positive values
-    indicate conservative bias, while negative values indicate a liberal
-    bias.
+    Estimates the criterion relative to the intersection of the signal and
+    noise distributions. $c = 0$ indicates no bias; positive values indicate
+    conservative bias, negative values indicate liberal bias.
 
     Examples
     --------
@@ -94,29 +99,31 @@ def c_bias(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
 
 
 def a_prime(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
-    """The sensitivity index A′.
+    """Non-parametric sensitivity index $A'$.
+
+    $$
+    A' = \\frac{1}{2} + \\operatorname{sgn}(H - F)
+    \\frac{(H - F)^2 + |H - F|}
+    {4 \\max(H, F) - 4  H  F}
+    $$
 
     Parameters
     ----------
-    tpr
-        The true positive rate(s) (range 0 <= `tpr` <= 1). Can be
-        a single float value or an array.
-    fpr
-        The false positive rate(s) (range 0 <= `fpr` <= 1). Can be
-        a single float value or an array.
+    tpr : ArrayLike
+        True positive rate(s), $0 \\leq H \\leq 1$.
+    fpr : ArrayLike
+        False positive rate(s), $0 \\leq F \\leq 1$.
 
     Returns
     -------
     ArrayLike
-        A′. A float or array of the same length as tpr, fpr, containing the A′
-        values.
+        $A'$. A float or array of the same shape as `tpr` and `fpr`.
 
     Notes
     -----
-    A non-parametric measure of discrimination that estimates
-    sensitivity as the area under an "average" ROC curve, for a
-    single true- and false-positive rate. For further details,
-    see Snograss & Corwin (1988). Note that d′ is preferred.
+    A non-parametric measure of discrimination that estimates sensitivity as
+    the area under an "average" ROC curve for a single TPR/FPR pair. See
+    Snodgrass & Corwin (1988). $d'$ is preferred where model assumptions hold.
     """
     return 0.5 + np.sign(tpr - fpr) * ((tpr - fpr) ** 2 + np.abs(tpr - fpr)) / (
         4 * np.maximum(tpr, fpr) - 4 * tpr * fpr
@@ -124,37 +131,32 @@ def a_prime(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
 
 
 def beta(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
-    """The bias measure, β.
+    """Likelihood-ratio bias measure $\\beta$.
+
+    $$
+    \\beta = \\exp\\!\\left(\\frac{z(F)^2 - z(H)^2}{2}\\right)
+    $$
+
+    where $z(\\cdot)$ denotes the inverse normal (probit) function.
 
     Parameters
     ----------
     tpr : ArrayLike
-        The true positive rate(s) (range 0 <= `tpr` <= 1). Can be
-        a single float value or an array.
+        True positive rate(s), $0 \\leq H \\leq 1$.
     fpr : ArrayLike
-        The false positive rate(s) (range 0 <= `fpr` <= 1). Can be
-        a single float value or an array.
+        False positive rate(s), $0 \\leq F \\leq 1$.
 
     Returns
     -------
-    ndarray
-        β. An array of the same length as tpr, fpr, containing the β values.
-        If `tpr` and `fpr` are single floats then a single float corresponding
-        to β is returned.
+    ArrayLike
+        $\\beta$. A float or array of the same shape as `tpr` and `fpr`.
 
     Notes
     -----
-    β is a likelihood ratio measure that estimates the criterion
-    value by computing the ratio of the heights of the signal &
-    noise distributions. It is a ratio of the density of the signal
-    distribution at the criterion divided by the same density for
-    the noise distribution.
-
-    It is the ratio of the likelihood of obtaining an observation
-    equal to the criterion given a signal to the likelihood of
-    obtaining this observation given noise.
-
-    See Snodgrass & Corwin (1988) for details.
+    The ratio of the signal distribution density to the noise distribution
+    density at the criterion. $\\beta = 1$ indicates no bias; $\\beta > 1$
+    indicates conservative bias, $\\beta < 1$ indicates liberal bias. See
+    Snodgrass & Corwin (1988) for details.
     """
     return np.exp((norm.ppf(fpr) ** 2 - norm.ppf(tpr) ** 2) / 2)
 
@@ -164,35 +166,33 @@ def beta_doubleprime(
     fpr: ArrayLike,
     donaldson: bool = False,
 ) -> ArrayLike:
-    """The bias index β″.
+    """Non-parametric bias index $\\beta''$.
+
+    Grier's (1971) formula:
+
+    $$
+    \\beta'' = \\text{sgn}(H - F) \\frac{H (1-H) - F (1-F)} {H (1-H) + F (1-F)}
+    $$
 
     Parameters
     ----------
     tpr : ArrayLike
-        The true positive rate(s) (range 0 <= `tpr` <= 1). Can be
-        a single float value or an array.
+        True positive rate(s), $0 \\leq H \\leq 1$.
     fpr : ArrayLike
-        The false positive rate(s) (range 0 <= `fpr` <= 1). Can be
-        a single float value or an array.
+        False positive rate(s), $0 \\leq F \\leq 1$.
     donaldson : bool, optional
-        Use Donaldson's calculation, by default False. If this value is
-        `False`, use Grier's (1971) as cited in Stanislaw & Todorov (1999).
+        Use Donaldson's formula instead of Grier's, by default False.
 
     Returns
     -------
-    float, np.ndarray
-        β″. An array of the same length as tpr, fpr, containing the β″
-        values. If `tpr` and `fpr` are single floats then a single float
-        corresponding to β″ is returned.
+    ArrayLike
+        $\\beta''$. A float or array of the same shape as `tpr` and `fpr`.
 
     Notes
     -----
-    Grier's β″ is A2-A1 divided by sum(A1, A2). If A1 < A2,
-    there is a liberal bias, and if A2 < A1, there is a conservative
-    bias.
-
-    Default is Grier's (1971) as cited in Stanislaw & Todorov (1999), but
-    can be changed to use Donaldson's calculation.
+    $\\beta'' \\in [-1, 1]$. Positive values indicate conservative bias,
+    negative values indicate liberal bias. Default is Grier's (1971) as cited
+    in Stanislaw & Todorov (1999).
     """
     fnr, tnr = 1 - tpr, 1 - fpr
 
@@ -203,8 +203,33 @@ def beta_doubleprime(
 
 
 def a_z(z_intercept: float, z_slope: float) -> float:
-    # See Stanislaw & Todorov (1999). Useful for checking the d′ assumption of
-    # equal variances: slope should = 1 (or log(slope) == 0).
+    """Area under the binormal ROC curve, $A_z$.
+
+    $$
+    A_z = \\Phi\\!\\left(\\frac{a}{\\sqrt{1 + b^2}}\\right)
+    $$
+
+    where $a$ is the $z$-ROC intercept, $b$ is the $z$-ROC slope, and
+    $\\Phi$ is the standard normal CDF.
+
+    Parameters
+    ----------
+    z_intercept : float
+        Intercept $a$ of the fitted $z$-ROC line.
+    z_slope : float
+        Slope $b$ of the fitted $z$-ROC line.
+
+    Returns
+    -------
+    float
+        $A_z$, the area under the binormal ROC curve.
+
+    Notes
+    -----
+    Useful for checking the equal-variance $d'$ assumption: the slope $b$
+    should equal 1 (equivalently, $\\ln b = 0$) under equal variances.
+    See Stanislaw & Todorov (1999).
+    """
     return float(norm.cdf(z_intercept / np.sqrt(1 + z_slope**2)))
 
 
