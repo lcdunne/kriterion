@@ -175,7 +175,7 @@ def sse(obs_prop: np.ndarray, exp_prop: np.ndarray) -> float:
     exp_prop :
         Expected cumulative proportions from the model.
     """
-    return np.sum((obs_prop - exp_prop) ** 2)
+    return float(np.sum((obs_prop - exp_prop) ** 2))
 
 
 def _to_cell_counts(cumulative_props: np.ndarray, n: int) -> np.ndarray:

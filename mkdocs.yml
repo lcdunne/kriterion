@@ -5,6 +5,7 @@ nav:
   - API Reference:
       - api/measures.md
       - api/theoretical_models.md
+      - api/estimation.md
       - api/objective_functions.md
       - api/data_helpers.md
 
