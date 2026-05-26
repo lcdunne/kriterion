@@ -11,6 +11,8 @@ nav:
 
 theme:
   name: material
+  favicon: images/favicon/favicon.ico
+  logo: images/logo/library_logo_fixed.png
   features:
     - content.footnote.tooltips
   palette:
@@ -20,7 +22,7 @@ theme:
       toggle:
         icon: material/lightbulb
         name: Switch to dark mode
-      primary: blue grey
+      primary: white
       accent: indigo
 
     # Palette toggle for dark mode
@@ -29,7 +31,7 @@ theme:
       toggle:
         icon: material/lightbulb-outline
         name: Switch to light mode
-      primary: blue grey
+      primary: black
       accent: indigo
 
 markdown_extensions:
