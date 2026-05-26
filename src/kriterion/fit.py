@@ -8,10 +8,34 @@ from scipy.optimize import minimize
 from kriterion import objectives
 from kriterion.models import Model
 
+type ObjectiveFunction = Callable[[np.ndarray, np.ndarray, Model], float]
+
 
 @dataclass
 class ModelSummary:
-    """Model Summary with all statistics calculated."""
+    """Goodness-of-fit statistics for a fitted model.
+
+    Attributes
+    ----------
+    dof :
+        Degrees of freedom.
+    chi2 :
+        Pearson $\\chi^2$ statistic.
+    chi2_p :
+        $p$-value for the $\\chi^2$ statistic.
+    g2 :
+        Likelihood-ratio $G^2$ statistic.
+    g2_p :
+        $p$-value for the $G^2$ statistic.
+    log_likelihood :
+        Log-likelihood of the fitted model.
+    aic :
+        Akaike Information Criterion.
+    bic :
+        Bayesian Information Criterion.
+    sse :
+        Sum of squared errors between observed and expected cumulative proportions.
+    """
 
     dof: int | float
     chi2: float
@@ -26,7 +50,7 @@ class ModelSummary:
 
 def fit(
     model: Model,
-    objective: Callable[[np.ndarray, np.ndarray, Model], float],
+    objective: ObjectiveFunction = objectives.log_likelihood_objective,
     method: str = "L-BFGS-B",
 ) -> ModelSummary:
     """Fit a theoretical model to observed data.
@@ -70,6 +94,13 @@ def aic(k: int, ll: float) -> float:
     $$
 
     This statistic is useful for model comparisons.
+
+    Parameters
+    ----------
+    k :
+        Number of estimated parameters in the model.
+    ll :
+        The log of the maximised value of the likelihood function for the model.
     """
     return float(2 * k - 2 * ll)
 
@@ -82,6 +113,15 @@ def bic(k: int, n: int, ll: float) -> float:
     $$
 
     This statistic is useful for model comparisons.
+
+    Parameters
+    ----------
+    k :
+        Number of estimated parameters in the model.
+    n :
+        Total number of observations in the data.
+    ll :
+        The log of the maximised value of the likelihood function for the model.
     """
     return float(k * np.log(n) - 2 * ll)
 

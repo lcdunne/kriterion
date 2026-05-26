@@ -1,12 +1,10 @@
 # Objective Functions
 
-The objective functions are used to find the best fit for the chosen model. Several functions are supported, including the $\chi^2$, $G^2$, Log-likelihood, and $\text{SSE}$.
+Several objective functions are supported for fitting models: $\chi^2$, $G^2$, log-likelihood, and $\text{SSE}$.
 
-There are tradeoffs with each approach. Those with the `_binom` suffix use the cumulative data, and treat the data at each criterion as a binomial with the counts above vs below the threshold, and then summing across all criteria. These variants converge reliably and are not impacted by sparse cell counts. However, these violate independence; because it works on cumulative data, successive threshold levels contain data from preceding levels. It treats overlapping data as if they were separate observations.
+The $\chi^2$ and $G^2$ statistics are also available in `_cumulative` variants. The standard variants compute the statistic from cell counts directly. This is conventional but it makes the procedure sensitive to sparse cells, e.g. when an observer makes few or no responses at a given criterion.
 
-Those without the `_binom` suffix compute the test statistic on the non-cumulative counts. This is more statistically consistent, but is sensitive to sparse cell counts (where an observer makes few or no responses at a particular criterion) which can make the $\chi^2$, $G^2$, and likelihood ratio approximations unreliable. Pooling responses across observers mitigates this, though it precludes single-subject analyses.
-
-A middle-ground for these tradeoffs might be to use the binomial approach to simply find the best estimates for the parameters, but to perform model comparisons and significance testing using the non-binomial variants.
+The `_cumulative` variants instead evaluate the fit via a binary split at each criterion threshold, with responses at or above the threshold versus those below, and then summing across all thresholds. This is robust to sparse cells, and is useful for getting a reliable fit during optimisation. However, successive thresholds share responses with all preceding ones, violating independence, so this is not recommended for model comparison.
 
 See [^cressie_read_1984] for reference.
 

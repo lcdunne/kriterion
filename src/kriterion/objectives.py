@@ -5,7 +5,7 @@ from kriterion.models import Model
 
 
 def chi_squared(obs: np.ndarray, exp: np.ndarray) -> float:
-    """Standard $\\chi^2$ statistic for a single response class.
+    """The $\\chi^2$ statistic for a single response class.
 
     $$
     \\chi^2 = \\sum_{k=1}^{K} \\frac{(O_k - E_k)^2}{E_k}
@@ -23,16 +23,30 @@ def chi_squared(obs: np.ndarray, exp: np.ndarray) -> float:
     return float(np.sum((obs - exp) ** 2 / exp))
 
 
-def chi_squared_binom(obs_prop: np.ndarray, exp_prop: np.ndarray, n: int) -> float:
-    """Binomial $\\chi^2$ statistic for a single response class.
+def chi_squared_cumulative(obs_prop: np.ndarray, exp_prop: np.ndarray, n: int) -> float:
+    """The $\\chi^2$ over binary (above/below) splits at each criterion threshold.
 
-    Each criterion threshold $k$ divides the $n$ trials into two groups: those
-    rated at or above $k$, and those below. $\\chi^2$ sums the Pearson statistic
-    across all $K-1$ thresholds:
+    This implementation is provided as an alternative approach for optimisation that may
+    result in a better fit; however it is not recommended for statistical analysis/model
+    comparisons due to violation of the assumption of independence.
+
+    Each of the $K-1$ thresholds divides the $n$ trials into two cells: those
+    rated at or above threshold $k$, and those below. The $\\chi^2$
+    statistic is summed over both cells of every threshold:
+
+    $$
+    \\chi^2 = \\sum_{k=1}^{K-1} \\sum_{j \\in \\{a,\\,b\\}}
+        \\frac{(O_{kj} - E_{kj})^2}{E_{kj}}
+    $$
+
+    where at threshold $k$ the above-cell is $(O_{ka}, E_{ka}) = (O_k, E_k)$ and
+    the below-cell is $(O_{kb}, E_{kb}) = (N - O_k,\\, N - E_k)$. Expanding the
+    inner sum over both cells:
 
     $$
     \\chi^2 = \\sum_{k=1}^{K-1} \\left[
-        \\frac{(O_k - E_k)^2}{E_k} + \\frac{((N-O_k) - (N-E_k))^2}{N - E_k}
+        \\frac{(O_k - E_k)^2}{E_k}
+        + \\frac{((N - O_k) - (N - E_k))^2}{N - E_k}
     \\right]
     $$
 
@@ -42,9 +56,9 @@ def chi_squared_binom(obs_prop: np.ndarray, exp_prop: np.ndarray, n: int) -> flo
     Parameters
     ----------
     obs_prop :
-        Observed cumulative proportions $O_k / N$ at each threshold.
+        Observed cumulative proportions $\\hat{p}_k$ at each threshold.
     exp_prop :
-        Expected cumulative proportions $E_k / N$ from the model.
+        Expected cumulative proportions $p_k$ from the model.
     n :
         Total trial count for this response class.
     """
@@ -57,11 +71,10 @@ def chi_squared_binom(obs_prop: np.ndarray, exp_prop: np.ndarray, n: int) -> flo
 
 
 def g_squared(obs: np.ndarray, exp: np.ndarray) -> float:
-    """$G^2$ (likelihood-ratio) statistic for a single response class. Standard
-    (multinomial) variant [^cressie_read_1984]:
+    """The $G^2$ (likelihood-ratio) statistic for a single response class[^cressie_read_1984]:
 
     $$
-    G^2 = 2 \\sum_{k=1}^{K} O_k \\ln \\frac{O_k}{E_k}
+    G^2 = 2 \\sum_{k=1}^{K} O_k \\ln \\left( \\frac{O_k}{E_k} \\right)
     $$
 
     where $O_k$ and $E_k$ are the observed and expected cell counts in bin $k$.
@@ -80,29 +93,41 @@ def g_squared(obs: np.ndarray, exp: np.ndarray) -> float:
     return 2 * float(np.sum(xlogy(obs, obs / exp)))
 
 
-def g_squared_binom(obs_prop: np.ndarray, exp_prop: np.ndarray, n: int) -> float:
-    """Binomial $G^2$ (likelihood-ratio) statistic for a single response class.
+def g_squared_cumulative(obs_prop: np.ndarray, exp_prop: np.ndarray, n: int) -> float:
+    """The $G^2$ (likelihood-ratio) statistic over binary (above/below) splits at each criterion threshold.
 
-    Each criterion threshold $k$ divides the $n$ trials into two groups: those
-    rated at or above $k$, and those below. $G^2$ sums the log-likelihood ratio
-    across all $K-1$ thresholds:
+    This implementation is provided as an alternative approach for optimisation that may
+    result in a better fit; however it is not recommended for statistical analysis/model
+    comparisons due to violation of the assumption of independence.
+
+    Each of the $K-1$ thresholds divides the $n$ trials into two cells: those
+    rated at or above threshold $k$, and those below. The $G^2$
+    statistic is summed over both cells of every threshold:
+
+    $$
+    G^2 = 2n \\sum_{k=1}^{K-1} \\sum_{j \\in \\{a,\\,b\\}}
+        \\hat{p}_{kj} \\ln \\left( \\frac{\\hat{p}_{kj}}{p_{kj}} \\right)
+    $$
+
+    where at threshold $k$ the above-cell is $(\\hat{p}_{ka}, p_{ka}) = (\\hat{p}_k, p_k)$ and
+    the below-cell is $(\\hat{p}_{kb}, p_{kb}) = (1 - \\hat{p}_k,\\, 1 - p_k)$. Expanding the
+    inner sum over both cells:
 
     $$
     G^2 = 2n \\sum_{k=1}^{K-1} \\left[
-        O_k \\ln \\frac{O_k}{E_k} + (1 - O_k) \\ln \\frac{1 - O_k}{1 - E_k}
+        \\hat{p}_k \\ln \\left( \\frac{\\hat{p}_k}{p_k} \\right) + (1 - \\hat{p}_k) \\ln \\left( \\frac{1 - \\hat{p}_k}{1 - p_k} \\right)
     \\right]
     $$
 
-    where $O_k$ and $E_k$ are the observed and expected cumulative proportions
-    at threshold $k$, and $n$ is the total trial count. Terms where $O_k = 0$
-    or $O_k = 1$ contribute zero by convention.
+    where $\\hat{p}_k$ and $p_k$ are the observed and expected cumulative proportions
+    at threshold $k$, and $n$ is the total trial count.
 
     Parameters
     ----------
     obs_prop :
-        Observed cumulative proportions $O_k$ at each threshold.
+        Observed cumulative proportions $\\hat{p}_k$ at each threshold.
     exp_prop :
-        Expected cumulative proportions $E_k$ from the model.
+        Expected cumulative proportions $p_k$ from the model.
     n :
         Total trial count for this response class.
     """
@@ -114,14 +139,14 @@ def g_squared_binom(obs_prop: np.ndarray, exp_prop: np.ndarray, n: int) -> float
 def log_likelihood(obs: np.ndarray, exp_prop: np.ndarray) -> float:
     """Log-likelihood for a single response class.
 
-    The multinomial log-likelihood of the observed cell counts given predicted
+    The log-likelihood of the observed cell counts given predicted
     cell probabilities is:
 
     $$
-    LL = \\sum_{k=1}^{K} O_k \\ln P_k
+    \\ell = \\sum_{k=1}^{K} O_k \\ln p_k
     $$
 
-    where $O_k$ are observed cell counts and $P_k$ are predicted cell
+    where $O_k$ are observed cell counts and $p_k$ are predicted cell
     probabilities. Returns a negative value.
 
     Parameters
@@ -129,38 +154,9 @@ def log_likelihood(obs: np.ndarray, exp_prop: np.ndarray) -> float:
     obs :
         Observed cell counts $O_k$ per rating bin.
     exp_prop :
-        Predicted cell probabilities $P_k$ from the model.
+        Predicted cell probabilities $p_k$ from the model.
     """
     return float(np.sum(xlogy(obs, exp_prop)))
-
-
-def log_likelihood_binom(obs_prop: np.ndarray, exp_prop: np.ndarray, n: int) -> float:
-    """Binomial pseudo-log-likelihood for a single response class.
-
-    Each criterion threshold $k$ is treated as an independent binary split.
-    The log-likelihood is summed across all $K-1$ thresholds:
-
-    $$
-    \\log L = n \\sum_{k=1}^{K-1} \\left[
-        O_k \\ln E_k + (1 - O_k) \\ln(1 - E_k)
-    \\right]
-    $$
-
-    where $O_k$ and $E_k$ are the observed and expected cumulative proportions
-    at threshold $k$, and $n$ is the total trial count. Returns a negative value.
-
-    Parameters
-    ----------
-    obs_prop :
-        Observed cumulative proportions $O_k$ at each threshold.
-    exp_prop :
-        Expected cumulative proportions $E_k$ from the model.
-    n :
-        Total trial count for this response class.
-    """
-    return n * float(
-        np.sum(xlogy(obs_prop, exp_prop) + xlogy(1 - obs_prop, 1 - exp_prop))
-    )
 
 
 def sse(obs_prop: np.ndarray, exp_prop: np.ndarray) -> float:
@@ -182,19 +178,6 @@ def _to_cell_counts(cumulative_props: np.ndarray, n: int) -> np.ndarray:
     return np.maximum(np.diff(cumulative_props, prepend=0.0, append=1.0), 1e-10) * n
 
 
-def log_likelihood_binom_objective(
-    signal_exp: np.ndarray, noise_exp: np.ndarray, model: Model
-) -> float:
-    return -(
-        log_likelihood_binom(
-            model.data.signal_proportions, signal_exp, model.data.n_signal
-        )
-        + log_likelihood_binom(
-            model.data.noise_proportions, noise_exp, model.data.n_noise
-        )
-    )
-
-
 def chi_squared_objective(
     signal_exp: np.ndarray, noise_exp: np.ndarray, model: Model
 ) -> float:
@@ -206,12 +189,14 @@ def chi_squared_objective(
     )
 
 
-def chi_squared_binom_objective(
+def chi_squared_cumulative_objective(
     signal_exp: np.ndarray, noise_exp: np.ndarray, model: Model
 ) -> float:
-    return chi_squared_binom(
+    return chi_squared_cumulative(
         model.data.signal_proportions, signal_exp, model.data.n_signal
-    ) + chi_squared_binom(model.data.noise_proportions, noise_exp, model.data.n_noise)
+    ) + chi_squared_cumulative(
+        model.data.noise_proportions, noise_exp, model.data.n_noise
+    )
 
 
 def g_squared_objective(
@@ -225,12 +210,14 @@ def g_squared_objective(
     )
 
 
-def g_squared_binom_objective(
+def g_squared_cumulative_objective(
     signal_exp: np.ndarray, noise_exp: np.ndarray, model: Model
 ) -> float:
-    return g_squared_binom(
+    return g_squared_cumulative(
         model.data.signal_proportions, signal_exp, model.data.n_signal
-    ) + g_squared_binom(model.data.noise_proportions, noise_exp, model.data.n_noise)
+    ) + g_squared_cumulative(
+        model.data.noise_proportions, noise_exp, model.data.n_noise
+    )
 
 
 def log_likelihood_objective(

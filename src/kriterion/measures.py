@@ -28,13 +28,11 @@ def compute_performance(
 
 
 def d_prime(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
-    """Sensitivity measure $d'$, element-wise.
+    """Sensitivity measure $d'$.
 
     $$
     d' = z(H) - z(F)
     $$
-
-    where $z(\\cdot)$ denotes the inverse normal (probit) function.
 
     Parameters
     ----------
@@ -69,7 +67,6 @@ def c_bias(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
     c = -\\frac{1}{2} \\left[ z(H) + z(F) \\right]
     $$
 
-    where $z(\\cdot)$ denotes the inverse normal (probit) function.
 
     Parameters
     ----------
@@ -136,8 +133,6 @@ def beta(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
     $$
     \\beta = \\exp\\!\\left(\\frac{z(F)^2 - z(H)^2}{2}\\right)
     $$
-
-    where $z(\\cdot)$ denotes the inverse normal (probit) function.
 
     Parameters
     ----------
@@ -206,7 +201,7 @@ def a_z(z_intercept: float, z_slope: float) -> float:
     """Area under the binormal ROC curve, $A_z$.
 
     $$
-    A_z = \\Phi\\!\\left(\\frac{a}{\\sqrt{1 + b^2}}\\right)
+    A_z = \\Phi \\left( \\frac{a}{\\sqrt{1 + b^2}} \\right)
     $$
 
     where $a$ is the $z$-ROC intercept, $b$ is the $z$-ROC slope, and
