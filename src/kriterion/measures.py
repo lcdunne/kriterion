@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import numpy as np
 from scipy.stats import norm
 
@@ -5,26 +7,76 @@ type ArrayLike = float | np.ndarray
 """A single float or a NumPy array."""
 
 
+@dataclass
+class Performance:
+    """Sensitivity and bias measures for one or more TPR/FPR pairs.
+
+    Attributes
+    ----------
+    tpr :
+        True positive rate(s).
+    fpr :
+        False positive rate(s).
+    d_prime :
+        Sensitivity $d'$.
+    a_prime :
+        Non-parametric sensitivity $A'$.
+    c_bias :
+        Criterion bias $c$.
+    beta :
+        Likelihood-ratio bias $\\beta$.
+    a_z :
+        Area under the binormal ROC curve $A_z$. Only present when
+        ``z_intercept`` and ``z_slope`` are provided to
+        :func:`compute_performance`.
+    """
+
+    tpr: ArrayLike
+    fpr: ArrayLike
+    d_prime: ArrayLike
+    a_prime: ArrayLike
+    c_bias: ArrayLike
+    beta: ArrayLike
+    a_z: ArrayLike | None = None
+
+
 def compute_performance(
-    tpr: float,
-    fpr: float,
-    z_intercept: float | None = None,
-    z_slope: float | None = None,
-) -> dict:
-    # TODO: Dataclass
-    performance = {
-        "TPR": tpr,
-        "FPR": fpr,
-        "dprime": d_prime(tpr, fpr),
-        "aprime": a_prime(tpr, fpr),
-        "cbias": c_bias(tpr, fpr),
-        "beta": beta(tpr, fpr),
-    }
+    tpr: ArrayLike,
+    fpr: ArrayLike,
+    z_intercept: ArrayLike | None = None,
+    z_slope: ArrayLike | None = None,
+) -> Performance:
+    """Compute all sensitivity and bias measures for one or more TPR/FPR pairs.
 
-    if z_intercept is not None and z_slope is not None:
-        performance["Az"] = a_z(z_intercept, z_slope)
+    Parameters
+    ----------
+    tpr :
+        True positive rate(s).
+    fpr :
+        False positive rate(s).
+    z_intercept :
+        Intercept of the fitted $z$-ROC line, required to compute $A_z$.
+    z_slope :
+        Slope of the fitted $z$-ROC line, required to compute $A_z$.
 
-    return performance
+    Returns
+    -------
+    result :
+        An instance of `Performance`, containing all measures.
+    """
+    return Performance(
+        tpr=tpr,
+        fpr=fpr,
+        d_prime=d_prime(tpr, fpr),
+        a_prime=a_prime(tpr, fpr),
+        c_bias=c_bias(tpr, fpr),
+        beta=beta(tpr, fpr),
+        a_z=(
+            a_z(z_intercept, z_slope)
+            if z_intercept is not None and z_slope is not None
+            else None
+        ),
+    )
 
 
 def d_prime(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
@@ -197,7 +249,7 @@ def beta_doubleprime(
     return np.sign(tpr - fpr) * (tpr * fnr - fpr * tnr) / (tpr * fnr + fpr * tnr)
 
 
-def a_z(z_intercept: float, z_slope: float) -> float:
+def a_z(z_intercept: ArrayLike, z_slope: ArrayLike) -> ArrayLike:
     """Area under the binormal ROC curve, $A_z$.
 
     $$
@@ -209,14 +261,14 @@ def a_z(z_intercept: float, z_slope: float) -> float:
 
     Parameters
     ----------
-    z_intercept : float
+    z_intercept : ArrayLike
         Intercept $a$ of the fitted $z$-ROC line.
-    z_slope : float
+    z_slope : ArrayLike
         Slope $b$ of the fitted $z$-ROC line.
 
     Returns
     -------
-    float
+    ArrayLike
         $A_z$, the area under the binormal ROC curve.
 
     Notes
@@ -225,7 +277,7 @@ def a_z(z_intercept: float, z_slope: float) -> float:
     should equal 1 (equivalently, $\\ln b = 0$) under equal variances.
     See Stanislaw & Todorov (1999).
     """
-    return float(norm.cdf(z_intercept / np.sqrt(1 + z_slope**2)))
+    return norm.cdf(z_intercept / np.sqrt(1 + z_slope**2))
 
 
 if __name__ == "__main__":
