@@ -7,6 +7,10 @@ type ArrayLike = float | np.ndarray
 """A single float or a NumPy array."""
 
 
+def _array_or_scalar(result: ArrayLike) -> ArrayLike:
+    return float(result) if np.ndim(result) == 0 else result
+
+
 @dataclass
 class Performance:
     """Sensitivity and bias measures for one or more TPR/FPR pairs.
@@ -58,11 +62,6 @@ def compute_performance(
         Intercept of the fitted $z$-ROC line, required to compute $A_z$.
     z_slope :
         Slope of the fitted $z$-ROC line, required to compute $A_z$.
-
-    Returns
-    -------
-    result :
-        An instance of `Performance`, containing all measures.
     """
     return Performance(
         tpr=tpr,
@@ -109,7 +108,7 @@ def d_prime(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
     >>> print(d)
     1.480910997214322
     """
-    return norm.ppf(tpr) - norm.ppf(fpr)
+    return _array_or_scalar(norm.ppf(tpr) - norm.ppf(fpr))
 
 
 def c_bias(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
@@ -144,7 +143,7 @@ def c_bias(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
     >>> print(c)
     0.06596574841107933
     """
-    return 1 / 2 * -(norm.ppf(tpr) + norm.ppf(fpr))
+    return _array_or_scalar(1 / 2 * -(norm.ppf(tpr) + norm.ppf(fpr)))
 
 
 def a_prime(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
@@ -174,8 +173,11 @@ def a_prime(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
     the area under an "average" ROC curve for a single TPR/FPR pair. See
     Snodgrass & Corwin (1988). $d'$ is preferred where model assumptions hold.
     """
-    return 0.5 + np.sign(tpr - fpr) * ((tpr - fpr) ** 2 + np.abs(tpr - fpr)) / (
-        4 * np.maximum(tpr, fpr) - 4 * tpr * fpr
+    return _array_or_scalar(
+        0.5
+        + np.sign(tpr - fpr)
+        * ((tpr - fpr) ** 2 + np.abs(tpr - fpr))
+        / (4 * np.maximum(tpr, fpr) - 4 * tpr * fpr)
     )
 
 
@@ -205,7 +207,7 @@ def beta(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
     indicates conservative bias, $\\beta < 1$ indicates liberal bias. See
     Snodgrass & Corwin (1988) for details.
     """
-    return np.exp((norm.ppf(fpr) ** 2 - norm.ppf(tpr) ** 2) / 2)
+    return _array_or_scalar(np.exp((norm.ppf(fpr) ** 2 - norm.ppf(tpr) ** 2) / 2))
 
 
 def beta_doubleprime(
@@ -244,9 +246,13 @@ def beta_doubleprime(
     fnr, tnr = 1 - tpr, 1 - fpr
 
     if donaldson:
-        return ((fnr * tnr) - (tpr * fpr)) / ((fnr * tnr) + (tpr * fpr))
+        return _array_or_scalar(
+            ((fnr * tnr) - (tpr * fpr)) / ((fnr * tnr) + (tpr * fpr))
+        )
 
-    return np.sign(tpr - fpr) * (tpr * fnr - fpr * tnr) / (tpr * fnr + fpr * tnr)
+    return _array_or_scalar(
+        np.sign(tpr - fpr) * (tpr * fnr - fpr * tnr) / (tpr * fnr + fpr * tnr)
+    )
 
 
 def a_z(z_intercept: ArrayLike, z_slope: ArrayLike) -> ArrayLike:
@@ -277,7 +283,7 @@ def a_z(z_intercept: ArrayLike, z_slope: ArrayLike) -> ArrayLike:
     should equal 1 (equivalently, $\\ln b = 0$) under equal variances.
     See Stanislaw & Todorov (1999).
     """
-    return norm.cdf(z_intercept / np.sqrt(1 + z_slope**2))
+    return _array_or_scalar(norm.cdf(z_intercept / np.sqrt(1 + z_slope**2)))
 
 
 if __name__ == "__main__":
