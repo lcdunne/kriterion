@@ -2,12 +2,15 @@ site_name: Kriterion
 
 nav:
   - index.md
+  - Examples:
+    - examples/fit_models.md
+    - examples/compare_models.md
   - API Reference:
-      - api/measures.md
-      - api/theoretical_models.md
-      - api/estimation.md
-      - api/objective_functions.md
-      - api/data_helpers.md
+    - api/measures.md
+    - api/theoretical_models.md
+    - api/estimation.md
+    - api/objective_functions.md
+    - api/data_helpers.md
 
 theme:
   name: material
@@ -19,7 +22,7 @@ theme:
     - content.code.select
     - navigation.path
     # - navigation.tabs
-    # - navigation.sections
+    - navigation.sections
   palette:
     # Palette toggle for light mode
     - media: '(prefers-color-scheme: light)'

@@ -1,6 +1,6 @@
 # Kriterion
 
-![Kriterion logo](images/logo/library_logo_fixed.png)
+![Kriterion logo](./docs/images/logo/library_logo_fixed.png)
 
 **Kriterion** is a Python library for analysing data using [signal detection theory](https://en.wikipedia.org/wiki/Detection_theory).
 
@@ -25,7 +25,9 @@ python -m pip install kriterion
 
 ## Usage
 
-## Example 1: Basic signal detection theory measures
+Check [the docs](./docs/) for more details.
+
+### Example 1: Basic signal detection theory measures
 
 With a single true positive and false positive rate, return all common detection measures:
 
@@ -49,12 +51,14 @@ Performance(
 )
 ```
 
-## Example 2: Receiver operating characteristic (ROC) modelling
+### Example 2: Receiver operating characteristic (ROC) modelling
 
-Given a set of responses to signal and noise trials, we can use the `ROCData` class to store the raw count data, along with the cumulative ROC and z-ROC data (see the API reference for full details).
+Given a set of rating-scale responses to signal and noise trials:
 
 ```python
 from kriterion.data import ROCData
+from kriterion.fit import fit
+from kriterion.models import  UnequalSignalDetection
 
 
 data = ROCData(
@@ -64,22 +68,14 @@ data = ROCData(
     # All responses to signal-absent (i.e. noise) trials
     noise=[115, 185, 304, 523, 551, 397],
 )
-```
-
-To fit a model:
-
-```python
-from kriterion.fit import fit
-from kriterion.models import  UnequalSignalDetection
 
 uvsdt = UnequalSignalDetection(data)
 
 result = fit(uvsdt)
-print(uvsdt.parameters)
-
 ```
 
 ```python title="Out"
+print(uvsdt.parameters)
 {
     'd': 1.1830254066861041,
     'signal_sd': 1.337287925732202,
@@ -89,17 +85,8 @@ print(uvsdt.parameters)
     'c3': -0.6973808897916125,
     'c4': -1.4561271120010804
 }
-"""
-```
 
-The result of the model fitting procedure can also be shown:
-
-```python
 print(result)
-```
-
-```python title="Out"
-
 ModelSummary(
     dof=3,
     chi2=9.183606301259807,
@@ -113,36 +100,7 @@ ModelSummary(
 )
 ```
 
-Finally, we can view the ROC data and the fitted model. Directly accessing the `data.*_proportions` will give the observed data, and calling the `roc()` method on the fitted model will return the curve for all criterion levels:
-
-```python
-fig, ax = plt.subplots()
-
-ax.axis("square")
-ax.plot([0, 1], [0, 1], ls="dashed", c="grey")  # Chance line
-
-# Plots the observations
-ax.scatter(
-    data.noise_proportions,
-    data.signal_proportions,
-    c="k"
-)
-
-# Obtain the curve by calling roc()
-ax.plot(*uvsdt.roc(), label="UVSDT")
-
-ax.set(
-    title='ROC with Unequal Variance Model',
-    xlim=(0, 1), ylim=(0, 1),
-    xlabel='FPR', ylabel='TPR',
-)
-ax.legend()
-
-plt.show()
-
-```
-
-![roc-zroc](images/examples/uvsdt_fit.png)
+![roc-zroc](./docs/images/examples/uvsdt_fit.png)
 
 ## License
 
