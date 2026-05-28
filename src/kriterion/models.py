@@ -216,7 +216,7 @@ class UnequalSignalDetection(ContinuousModel):
 
     _param_spec = {
         "d": Param(initial=1.0),
-        "signal_sd": Param(initial=1.5, bounds=(0, None)),
+        "signal_sd": Param(initial=1.5, bounds=(1e-4, None)),
     }
 
     d: float
