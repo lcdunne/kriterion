@@ -148,3 +148,57 @@ def _calculate_all_stats(model: Model) -> ModelSummary:
         bic=_bic,
         sse=sse,
     )
+
+
+def compare_nested(
+    restricted: ModelSummary, full: ModelSummary
+) -> tuple[float, int | float, np.ndarray]:
+    """Likelihood-ratio test between two nested models.
+
+    Tests whether the additional parameters of the fuller model yield a
+    significant improvement in fit, using the difference in $G^2$ against a
+    $\\chi^2$ distribution with degrees of freedom equal to the difference in
+    parameter counts.
+
+    Assumes the two models are nested: the restricted model must be obtainable
+    by fixing one or more of the fuller model's parameters to constants. If
+    they are not nested, the likelihood-ratio test is invalid and AIC or BIC
+    should be used instead via $\\text{AIC}_a - \\text{AIC}_b$.
+
+    Parameters
+    ----------
+    restricted :
+        Fit summary of the simpler (restricted) model. This model should have fewer free
+        parameters, and therefore larger residual degrees of freedom.
+    full :
+        Fit summary of the fuller model. This model should have more free parameters,
+        and therefore smaller residual degrees of freedom.
+
+    Returns
+    -------
+    tuple[float, int | float, np.ndarray]
+        `(delta_g, delta_dof, p)`: the likelihood-ratio statistic
+        $\\Delta G^2 = G^2_{\\text{restricted}} - G^2_{\\text{full}}$, the
+        degrees of freedom $\\Delta\\text{dof}$, and the $p$-value.
+
+    Raises
+    ------
+    ValueError
+        If `full` does not have more parameters than `restricted` (i.e.
+        `delta_dof <= 0`), or if the restricted model fits better than the
+        fuller one (`delta_g < 0`), which shouldn't occur for correctly
+        nested, correctly fitted models.
+    """
+    delta_g = restricted.g2 - full.g2
+    delta_dof = restricted.dof - full.dof
+
+    if delta_dof <= 0:
+        raise ValueError(
+            "`full` must have more parameters (smaller dof) than `restricted`"
+        )
+
+    if delta_g < 0:
+        raise ValueError("restricted model fits better than full - check nesting/fit")
+
+    p = stats.chi2.sf(delta_g, delta_dof)
+    return delta_g, delta_dof, p

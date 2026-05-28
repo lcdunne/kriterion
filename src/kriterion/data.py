@@ -94,15 +94,38 @@ class ROCData:
 
     Parameters
     ----------
-    signal : list[int]
+    signal :
         Frequency counts per rating bin for signal trials.
-    noise : list[int]
+    noise :
         Frequency counts per rating bin for noise trials.
-    condition : str, optional
+    condition :
         Label for the experimental condition, by default None.
-    correction : Correction, optional
+    correction :
         Correction method for extreme proportions (0s and 1s),
         by default `Correction.INCREMENTAL`.
+
+    Attributes
+    ----------
+    signal : np.ndarray
+        Frequency counts per rating bin for signal trials.
+    noise : np.ndarray
+        Frequency counts per rating bin for noise trials.
+    condition : str or None
+        Label for the experimental condition.
+    correction : Correction
+        Correction method applied when computing proportions.
+    n_signal : int
+        Total number of signal trials.
+    n_noise : int
+        Total number of noise trials.
+    signal_proportions : np.ndarray
+        Cumulative proportions for signal trials at each rating threshold.
+    noise_proportions : np.ndarray
+        Cumulative proportions for noise trials at each rating threshold.
+    z_signal : np.ndarray
+        $z$-transformed cumulative signal proportions.
+    z_noise : np.ndarray
+        $z$-transformed cumulative noise proportions.
 
     Raises
     ------
