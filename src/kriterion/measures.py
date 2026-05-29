@@ -82,8 +82,11 @@ def d_prime(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
     """Sensitivity measure $d'$.
 
     $$
-    d' = z(H) - z(F)
+    d' = \\Phi^{-1}(H) - \\Phi^{-1}(F)
     $$
+
+    Where $\\Phi^{-1}(p)$ is the inverse cumulative distribution function, which
+    converts a probability to a $z$-score.
 
     Parameters
     ----------
@@ -115,7 +118,7 @@ def c_bias(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
     """Bias measure $c$.
 
     $$
-    c = -\\frac{1}{2} \\left[ z(H) + z(F) \\right]
+    c = -\\frac{1}{2} \\left[ \\Phi^{-1}(H) + \\Phi^{-1}(F) \\right]
     $$
 
 
@@ -185,7 +188,7 @@ def beta(tpr: ArrayLike, fpr: ArrayLike) -> ArrayLike:
     """Likelihood-ratio bias measure $\\beta$.
 
     $$
-    \\beta = \\exp\\!\\left(\\frac{z(F)^2 - z(H)^2}{2}\\right)
+    \\beta = \\exp\\!\\left(\\frac{\\left[\\Phi^{-1}(F)\\right]^2 - \\left[\\Phi^{-1}(H)\\right]^2}{2}\\right)
     $$
 
     Parameters
