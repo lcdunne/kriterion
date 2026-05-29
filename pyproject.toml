@@ -7,7 +7,7 @@ authors = [
 ]
 readme = "README.md"
 license = "GPL-3.0-or-later"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 keywords = ["signal-detection", "psychophysics", "roc", "psychometrics"]
 classifiers = [
     "Development Status :: 3 - Alpha",
