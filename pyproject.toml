@@ -1,16 +1,31 @@
 [project]
 name = "kriterion"
-version = "0.1.0"
+version = "0.1.1"
 description = "Library for signal detection theory analysis."
 authors = [
     {name = "L",email = "56237933+lcdunne@users.noreply.github.com"}
 ]
 readme = "README.md"
+license = "GPL-3.0-or-later"
 requires-python = ">=3.12"
+keywords = ["signal-detection", "psychophysics", "roc", "psychometrics"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering",
+]
 dependencies = [
     "numpy (>=2.4.6,<3.0.0)",
     "scipy (>=1.17.1,<2.0.0)"
 ]
+
+[project.urls]
+Homepage = "https://github.com/lcdunne/kriterion"
+Repository = "https://github.com/lcdunne/kriterion"
+Documentation = "https://kriterion.readthedocs.io"
+Issues = "https://github.com/lcdunne/kriterion/issues"
 
 [tool.poetry]
 packages = [{include = "kriterion", from = "src"}]
