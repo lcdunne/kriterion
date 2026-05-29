@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/lcdunne/kriterion"
+Homepage = "https://kriterion.readthedocs.io"
 Repository = "https://github.com/lcdunne/kriterion"
 Documentation = "https://kriterion.readthedocs.io"
 Issues = "https://github.com/lcdunne/kriterion/issues"
