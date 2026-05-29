@@ -18,14 +18,17 @@ packages = [{include = "kriterion", from = "src"}]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.3"
-mkdocs = "^1.6.1"
 matplotlib = "^3.10.9"
 black = "^26.5.1"
 isort = "^8.0.1"
+jupyterlab = "^4.5.7"
+
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.6.1"
+mkdocs-material = "^9.7.6"
 mkdocstrings = "^1.0.4"
 mkdocstrings-python = "^2.0.3"
-mkdocs-material = "^9.7.6"
-jupyterlab = "^4.5.7"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
