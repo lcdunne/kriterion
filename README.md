@@ -1,12 +1,12 @@
 # Kriterion
 
-![Kriterion logo](./docs/images/logo/library_logo_fixed.png)
+![Kriterion logo](https://raw.githubusercontent.com/lcdunne/kriterion/main/docs/images/logo/library_logo_fixed.png)
 
 **Kriterion** is a Python library for analysing data using [signal detection theory](https://en.wikipedia.org/wiki/Detection_theory).
 
 Key features:
 
-- Compute sensitivity and bias measures: $d'$, $c$ and more
+- Compute sensitivity and bias measures: d', c and more
 - Fit detection models to ROC data
 - Assess model fits
 
@@ -25,7 +25,7 @@ python -m pip install kriterion
 
 ## Usage
 
-Check [the docs](./docs/) for more details.
+Check [the docs](https://kriterion.readthedocs.io) for more details.
 
 ### Example 1: Basic signal detection theory measures
 
@@ -100,7 +100,7 @@ ModelSummary(
 )
 ```
 
-![roc-zroc](./docs/images/examples/uvsdt_fit.png)
+![uvsdt-fit](https://raw.githubusercontent.com/lcdunne/kriterion/main/docs/images/examples/uvsdt_fit.png)
 
 ## License
 
