@@ -25,8 +25,6 @@ python -m pip install kriterion
 
 ## Usage
 
-Check [the docs](./docs/) for more details.
-
 ### Example 1: Basic signal detection theory measures
 
 With a single true positive and false positive rate, return all common detection measures:
