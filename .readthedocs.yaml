@@ -2,7 +2,7 @@ version: 2
 
 mkdocs:
   configuration: mkdocs.yml
-  
+
 build:
   os: ubuntu-24.04
   tools:
@@ -10,5 +10,6 @@ build:
   jobs:
     post_create_environment:
       - pip install poetry
+      - poetry config virtualenvs.create false
     post_install:
-      - poetry install --only docs
+      - poetry install --with docs
