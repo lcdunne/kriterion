@@ -2,7 +2,7 @@
 
 ![Kriterion logo](https://raw.githubusercontent.com/lcdunne/kriterion/main/docs/images/logo/library_logo_fixed.png)
 
-**Kriterion** is a Python library for analysing data using [signal detection theory](https://en.wikipedia.org/wiki/Detection_theory).
+**Kriterion** is a Python library for analysing data using [signal detection theory](https://en.wikipedia.org/wiki/Detection_theory). Check out [the docs](https://kriterion.readthedocs.io/en/latest/)!
 
 Key features:
 
