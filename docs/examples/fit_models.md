@@ -99,4 +99,5 @@ plt.show()
 
 ```
 
-![roc-zroc](../images/examples/uvsdt_fit.png)
+![roc-zroc](./images/examples/uvsd_roc_light.png#only-light)
+![roc-zroc](./images/examples/uvsd_roc_dark.png#only-dark)
